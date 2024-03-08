@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use dinglebit_combinatorics::Combination;
 
 fn main() {
@@ -90,24 +92,36 @@ fn simulate_fight(stats: &[(u16, u16, u16)], outcome: &str) -> u16 {
     let mut turn: char = 'P';
 
     while player_hp > 0 && boss_hp > 0 {
-        match turn {
-            'P' => {
+        match (
+            turn,
+            player_damage.cmp(&BOSS_ARMOR),
+            BOSS_DAMAGE.cmp(&player_armor),
+        ) {
+            ('P', Ordering::Greater, _) => {
                 boss_hp -= player_damage as i16 - BOSS_ARMOR as i16;
                 turn = 'B';
             }
-            'B' => {
+            ('P', _, _) => {
+                boss_hp -= 1;
+                turn = 'B';
+            }
+            ('B', _, Ordering::Greater) => {
                 player_hp -= BOSS_DAMAGE as i16 - player_armor as i16;
                 turn = 'P';
             }
-            _ => panic!()
+            ('B', _, _) => {
+                player_hp -= 1;
+                turn = 'P';
+            }
+            _ => panic!(),
         }
     }
 
-    match (outcome, player_hp > boss_hp) {
-        ("win", true) => cost,
-        ("win", false) => u16::MAX,
-        ("lose", true) => u16::MIN,
-        ("lose", false) => cost,
+    match (outcome, player_hp.cmp(&boss_hp)) {
+        ("win", Ordering::Greater) => cost,
+        ("win", Ordering::Less) => u16::MAX,
+        ("lose", Ordering::Greater) => u16::MIN,
+        ("lose", Ordering::Less) => cost,
         _ => panic!(),
     }
 }
