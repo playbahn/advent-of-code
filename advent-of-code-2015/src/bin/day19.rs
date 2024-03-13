@@ -46,7 +46,11 @@ fn devolve_molecule(
     min_steps: &mut usize,
     replacements: &HashMap<&str, HashSet<&str>>,
 ) {
-    println!("{intermediate}");
+    if !(steps < *min_steps) {
+        return;
+    }
+    
+    // println!("{intermediate}");
     match &intermediate[..] {
         // e => HF  // e => NAl // e => OMg
         "HF" | "NAl" | "OMg" => {

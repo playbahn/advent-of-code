@@ -34,23 +34,23 @@ fn main() {
 
     for weapon in weapons {
         for armor in armor {
-            win_cost = win_cost.min(simulate_fight(&[weapon, armor], "win"));
-            lose_cost = lose_cost.max(simulate_fight(&[weapon, armor], "lose"));
+            win_cost = win_cost.min(simulate_duel(&[weapon, armor], "win"));
+            lose_cost = lose_cost.max(simulate_duel(&[weapon, armor], "lose"));
 
             for ring_combination in &ring_combinations {
                 match ring_combination.len() {
                     1 => {
-                        win_cost = win_cost.min(simulate_fight(
+                        win_cost = win_cost.min(simulate_duel(
                             &[weapon, armor, rings[ring_combination[0]]],
                             "win",
                         ));
-                        lose_cost = lose_cost.max(simulate_fight(
+                        lose_cost = lose_cost.max(simulate_duel(
                             &[weapon, armor, rings[ring_combination[0]]],
                             "lose",
                         ));
                     }
                     2 => {
-                        win_cost = win_cost.min(simulate_fight(
+                        win_cost = win_cost.min(simulate_duel(
                             &[
                                 weapon,
                                 armor,
@@ -59,7 +59,7 @@ fn main() {
                             ],
                             "win",
                         ));
-                        lose_cost = lose_cost.max(simulate_fight(
+                        lose_cost = lose_cost.max(simulate_duel(
                             &[
                                 weapon,
                                 armor,
@@ -69,7 +69,7 @@ fn main() {
                             "lose",
                         ));
                     }
-                    _ => {}
+                    _ => panic!()
                 }
             }
         }
@@ -79,11 +79,9 @@ fn main() {
     println!("{}", lose_cost);
 }
 
-fn simulate_fight(stats: &[(u16, u16, u16)], outcome: &str) -> u16 {
+fn simulate_duel(stats: &[(u16, u16, u16)], outcome: &str) -> u16 {
     let mut player_hp: i16 = 100;
     let mut boss_hp: i16 = 100;
-    const BOSS_DAMAGE: u16 = 8;
-    const BOSS_ARMOR: u16 = 2;
 
     let (cost, player_damage, player_armor): (u16, u16, u16) = stats
         .iter()
@@ -94,11 +92,11 @@ fn simulate_fight(stats: &[(u16, u16, u16)], outcome: &str) -> u16 {
     while player_hp > 0 && boss_hp > 0 {
         match (
             turn,
-            player_damage.cmp(&BOSS_ARMOR),
-            BOSS_DAMAGE.cmp(&player_armor),
+            player_damage.cmp(&2),
+            8.cmp(&player_armor),
         ) {
             ('P', Ordering::Greater, _) => {
-                boss_hp -= player_damage as i16 - BOSS_ARMOR as i16;
+                boss_hp -= player_damage as i16 - 2;
                 turn = 'B';
             }
             ('P', _, _) => {
@@ -106,7 +104,7 @@ fn simulate_fight(stats: &[(u16, u16, u16)], outcome: &str) -> u16 {
                 turn = 'B';
             }
             ('B', _, Ordering::Greater) => {
-                player_hp -= BOSS_DAMAGE as i16 - player_armor as i16;
+                player_hp -= 8 - player_armor as i16;
                 turn = 'P';
             }
             ('B', _, _) => {
