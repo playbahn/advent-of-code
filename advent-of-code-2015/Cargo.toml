@@ -93,6 +93,10 @@ path = "src/bin/day23.rs"
 name = "day24"
 path = "src/bin/day24.rs"
 
+[[bin]]
+name = "day25"
+path = "src/bin/day25.rs"
+
 [dependencies]
 dinglebit_combinatorics = "1.1.0"
 md5 = "0.7.0"
