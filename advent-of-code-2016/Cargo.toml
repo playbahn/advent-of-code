@@ -106,3 +106,4 @@ name = "day25"
 path = "src/bin/day25.rs"
 
 [dependencies]
+md5 = "0.7.0"
