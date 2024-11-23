@@ -5,7 +5,7 @@ fn main() {
 
     let (x1, y1, _): (i16, i16, _) = ins
         .split(&[',', ' '][..])
-        .filter(|subslice| *subslice != "")
+        .filter(|subslice| !subslice.is_empty())
         .fold((0, 0, "N"), |(x, y, facing), ins| {
             let steps: &i16 = &ins[1..].parse().unwrap();
             match (facing, &ins[..1]) {
@@ -23,12 +23,12 @@ fn main() {
     let mut facing: char = 'N';
     let mut visited: HashSet<(i16, i16)> = HashSet::from([(0, 0)]);
 
-    'main: for ins in ins.split(&[',', ' '][..]).filter(|subslice| *subslice != "") {
+    'main: for ins in ins.split(&[',', ' '][..]).filter(|subslice| !subslice.is_empty()) {
         let steps: &i16 = &ins[1..].parse().unwrap();
         match (facing, &ins[..1]) {
             ('N', "L") | ('S', "R") => {
                 for x in (x2 - steps..x2).rev() {
-                    if visited.insert((x, y2)) == false {
+                    if !visited.insert((x, y2)) {
                         println!("{}", i16::abs(x) + i16::abs(y2));
                         break 'main;
                     }
@@ -37,7 +37,7 @@ fn main() {
             }
             ('N', "R") | ('S', "L") => {
                 for x in (x2 + 1)..(x2 + steps + 1) {
-                    if visited.insert((x, y2)) == false {
+                    if !visited.insert((x, y2)) {
                         println!("{}", i16::abs(x) + i16::abs(y2));
                         break 'main;
                     }
@@ -46,7 +46,7 @@ fn main() {
             }
             ('E', "L") | ('W', "R") => {
                 for y in (y2 + 1)..(y2 + steps + 1) {
-                    if visited.insert((x2, y)) == false {
+                    if !visited.insert((x2, y)) {
                         println!("{}", i16::abs(x2) + i16::abs(y));
                         break 'main;
                     }
@@ -55,7 +55,7 @@ fn main() {
             }
             ('E', "R") | ('W', "L") => {
                 for y in (y2 - steps..y2).rev() {
-                    if visited.insert((x2, y)) == false {
+                    if !visited.insert((x2, y)) {
                         println!("{}", i16::abs(x2) + i16::abs(y));
                         break 'main;
                     }
