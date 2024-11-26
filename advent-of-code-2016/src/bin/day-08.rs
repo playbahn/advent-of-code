@@ -47,6 +47,4 @@ fn main() {
     });
 
     println!("lit: {lit}")
-    
-    
 }
