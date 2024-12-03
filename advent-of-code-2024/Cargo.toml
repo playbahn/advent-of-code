@@ -1,5 +1,5 @@
 [package]
-name = "advent-of-code-skeleton"
+name = "advent-of-code-2024"
 version = "0.1.0"
 edition = "2021"
 
@@ -104,5 +104,3 @@ path = "src/bin/day-24.rs"
 [[bin]]
 name = "day25"
 path = "src/bin/day-25.rs"
-
-[dependencies]

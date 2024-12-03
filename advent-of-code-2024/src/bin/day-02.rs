@@ -1,11 +1,9 @@
-use std::cmp::Ordering;
-
 fn is_safe(report: &[u8]) -> bool {
     report
         .windows(2)
         .fold(
             (true, report[0].cmp(&report[1])),
-            |(safe, prev_ord), adj| -> (bool, Ordering) {
+            |(safe, prev_ord), adj| -> (bool, std::cmp::Ordering) {
                 (
                     safe && prev_ord == adj[0].cmp(&adj[1])
                         && (1..4).contains(&adj[0].abs_diff(adj[1])),
