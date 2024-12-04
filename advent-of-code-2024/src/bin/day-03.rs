@@ -43,13 +43,13 @@ fn main() {
     println!("res_1: {res_1}");
 
     // part 2
-    let mut vec = input.match_indices("do()").collect::<Vec<_>>();
-    vec.extend(input.match_indices("don't()"));
-    vec.sort_by(|flag1, flag2| flag1.0.cmp(&flag2.0));
-    vec.dedup_by(|flag1, flag2| flag1.1 == flag2.1);
+    let mut flags_idx: Vec<(usize, &str)> = input.match_indices("do()").collect();
+    flags_idx.extend(input.match_indices("don't()"));
+    flags_idx.sort_by(|flag1, flag2| flag1.0.cmp(&flag2.0));
+    flags_idx.dedup_by(|flag1, flag2| flag1.1 == flag2.1);
 
     let res_2 = common
-        + vec.windows(2).fold(0, |sum, flags| {
+        + flags_idx.windows(2).fold(0, |sum, flags| {
             sum + if flags[0].1 == "do()" {
                 sum_for_substring(&input[flags[0].0 + 4..flags[1].0])
             } else {
