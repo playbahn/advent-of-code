@@ -11,14 +11,18 @@ fn mul(input_slice: &str) -> u32 {
         return 0;
     };
 
-    if let (Ok(x), Ok(y)) = (
-        input_slice[4..comma].parse::<u32>(),
-        input_slice[1 + comma..ins_end].parse::<u32>(),
-    ) {
-        x * y
-    } else {
-        0
-    }
+    // print-debugging shows there were no `parse::<u32>()` errors
+    input_slice[4..comma].parse::<u32>().unwrap()
+        * input_slice[1 + comma..ins_end].parse::<u32>().unwrap()
+
+    // if let (Ok(x), Ok(y)) = (
+    //     input_slice[4..comma].parse::<u32>(),
+    //     input_slice[1 + comma..ins_end].parse::<u32>(),
+    // ) {
+    //     x * y
+    // } else {
+    //     0
+    // }
 }
 
 fn sum_for_substring(input: &str) -> u64 {
@@ -35,7 +39,7 @@ fn main() {
         .find("do()")
         .unwrap()
         .min(input.find("don't()").unwrap());
-    
+
     let common = sum_for_substring(&input[..flag_start]);
 
     // part 1

@@ -18,7 +18,7 @@ fn main() {
             if window == ['X', 'M', 'A', 'S'] || window == ['S', 'A', 'M', 'X'] {
                 xmas += 1;
             }
-        })
+        });
     });
 
     // col-wise
@@ -35,7 +35,7 @@ fn main() {
             {
                 xmas += 1;
             }
-        })
+        });
     });
 
     // diagonally
@@ -69,7 +69,7 @@ fn main() {
         });
     });
 
-    println!("count: {xmas}");
+    println!("xmas: {xmas}");
 
     let mut x_mas = 0u16;
 
