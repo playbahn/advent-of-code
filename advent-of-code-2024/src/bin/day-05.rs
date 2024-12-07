@@ -22,7 +22,7 @@ fn main() {
     let mut sum2 = 0u16;
     let mut correct;
 
-    '_update: for update in &mut updates {
+    for update in &mut updates {
         correct = true;
         // for any index, say `2` in an `update` of `len() = 5`, we check
         // if pages at indices `3` or `4` come before page at index `2`
@@ -30,11 +30,11 @@ fn main() {
         for came_before in 0..update.len() - 1 {
             for came_after in came_before + 1..update.len() {
                 // page `update[came_after]` comes AFTER
-                // page `update[came_before]` in current update
+                // page `update[came_before]` in `update`
                 if rules.contains(&(update[came_after], update[came_before])) {
                     // page `update[came_after]` comes BEFORE
-                    // page `update[came_before]` in rules;
-                    // update is in incorrect order.
+                    // page `update[came_before]` in `rules`;
+                    // `update` is in incorrect order.
                     correct = false;
                     update.swap(came_after, came_before);
                 }
