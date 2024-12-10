@@ -1,10 +1,11 @@
 use std::collections::HashSet;
 
-const PATH: &str = "input/day-10.txt";
-
 type Coords = (usize, usize);
 
-fn get_peaks(curr: Coords, map: &[[u8; 59]; 59], peaks: &mut HashSet<Coords>, rating: &mut u16) {
+const PATH: &str = "input/day-10.txt";
+const UB: usize = 59;
+
+fn get_peaks(curr: Coords, map: &[[u8; UB]; UB], peaks: &mut HashSet<Coords>, rating: &mut u16) {
     if map[curr.0][curr.1] == 9 {
         peaks.insert(curr);
         *rating += 1;
@@ -17,7 +18,7 @@ fn get_peaks(curr: Coords, map: &[[u8; 59]; 59], peaks: &mut HashSet<Coords>, ra
         }
     }
 
-    if 1 + curr.0 < 59 && map[1 + curr.0][curr.1] == 1 + map[curr.0][curr.1] {
+    if 1 + curr.0 < UB && map[1 + curr.0][curr.1] == 1 + map[curr.0][curr.1] {
         get_peaks((1 + curr.0, curr.1), map, peaks, rating);
     }
 
@@ -27,13 +28,13 @@ fn get_peaks(curr: Coords, map: &[[u8; 59]; 59], peaks: &mut HashSet<Coords>, ra
         }
     }
 
-    if 1 + curr.1 < 59 && map[curr.0][1 + curr.1] == 1 + map[curr.0][curr.1] {
+    if 1 + curr.1 < UB && map[curr.0][1 + curr.1] == 1 + map[curr.0][curr.1] {
         get_peaks((curr.0, 1 + curr.1), map, peaks, rating);
     }
 }
 
 fn main() {
-    let mut map: [[u8; 59]; 59] = [[255; 59]; 59];
+    let mut map: [[u8; UB]; UB] = [[255; UB]; UB];
     let mut heads: Vec<Coords> = Vec::new();
 
     std::fs::read_to_string(PATH)
