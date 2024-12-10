@@ -69,7 +69,7 @@ fn main() {
                             "lose",
                         ));
                     }
-                    _ => panic!()
+                    _ => panic!(),
                 }
             }
         }
@@ -90,11 +90,7 @@ fn simulate_duel(stats: &[(u16, u16, u16)], outcome: &str) -> u16 {
     let mut turn: char = 'P';
 
     while player_hp > 0 && boss_hp > 0 {
-        match (
-            turn,
-            player_damage.cmp(&2),
-            8.cmp(&player_armor),
-        ) {
+        match (turn, player_damage.cmp(&2), 8.cmp(&player_armor)) {
             ('P', Ordering::Greater, _) => {
                 boss_hp -= player_damage as i16 - 2;
                 turn = 'B';

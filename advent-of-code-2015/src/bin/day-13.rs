@@ -1,11 +1,11 @@
-use std::{collections::{HashMap, HashSet}, fs, i32::MIN};
+use std::collections::{HashMap, HashSet};
 
 fn main() {
-    let all_stats: String = fs::read_to_string("input/day13.txt").unwrap();
+    let all_stats: String = std::fs::read_to_string("input/day13.txt").unwrap();
     let mut stats: HashMap<&str, HashMap<&str, i32>> = HashMap::new();
     let mut people: HashSet<&str> = HashSet::new();
     let mut arrangements: Vec<Vec<&str>> = Vec::new();
-    
+
     for stat in all_stats.lines() {
         let stat: Vec<&str> = stat.split_ascii_whitespace().collect();
         people.insert(stat[0]);
@@ -13,30 +13,25 @@ fn main() {
         stats
             .entry(stat[0])
             .and_modify(|neighbour: &mut HashMap<&str, i32>| {
-                neighbour
-                    .insert(
-                        stat[10],
-                        (||
-                            if stat[2] == "gain" {
-                                stat[3].parse().unwrap()
-                            } else {
-                                0 - stat[3].parse::<i32>().unwrap()
-                            }
-                        ) ()
-                    );
+                neighbour.insert(
+                    stat[10],
+                    if stat[2] == "gain" {
+                        stat[3].parse().unwrap()
+                    } else {
+                        0 - stat[3].parse::<i32>().unwrap()
+                    },
+                );
             })
-            .or_insert((||
-                if stat[2] == "gain" {
-                    HashMap::from([(stat[10], stat[3].parse().unwrap())])
-                } else {
-                    HashMap::from([(stat[10], 0 - stat[3].parse::<i32>().unwrap())])
-                }) ()
-            );
-        }
-        
+            .or_insert(if stat[2] == "gain" {
+                HashMap::from([(stat[10], stat[3].parse().unwrap())])
+            } else {
+                HashMap::from([(stat[10], 0 - stat[3].parse::<i32>().unwrap())])
+            });
+    }
+
     generate_arrangements(&mut arrangements, Vec::new(), people);
 
-    let mut happiness: i32 = MIN;
+    let mut happiness: i32 = i32::MIN;
     let mut cur_happiness: i32;
     for arrangement in arrangements {
         cur_happiness = 0;
@@ -45,7 +40,7 @@ fn main() {
             cur_happiness += stats[pair[0]][pair[1]];
             cur_happiness += stats[pair[1]][pair[0]];
         }
-        
+
         cur_happiness += stats[arrangement[0]][arrangement[arrangement.len() - 1]];
         cur_happiness += stats[arrangement[arrangement.len() - 1]][arrangement[0]];
 
@@ -58,9 +53,9 @@ fn main() {
 fn generate_arrangements<'a, 'b: 'a, 'c: 'b>(
     arrangements: &mut Vec<Vec<&'a str>>,
     seated: Vec<&'b str>,
-    left: HashSet<&'c str>
+    left: HashSet<&'c str>,
 ) {
-    if left.len() == 0 {
+    if left.is_empty() {
         arrangements.push(seated);
         return;
     }

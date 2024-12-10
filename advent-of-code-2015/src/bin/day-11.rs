@@ -1,14 +1,18 @@
 use std::collections::HashSet;
 
 fn main() {
-    // let mut pswd: Vec<char> = Vec::from_iter("vzbxkghb".chars());
-    // let mut pswd: Vec<char> = Vec::from_iter("vzbxxyzz".chars());
-    let mut pswd: Vec<char> = Vec::from_iter("vzbxxzaa".chars());
+    // part 1
+    let mut pswd = Vec::from_iter(std::fs::read_to_string("input/day-11.txt").unwrap().chars());
+    // part 2
+    // let mut pswd = Vec::from_iter("vzbxxyzz".chars());
     let mut no_iol: bool;
     let mut increasing_straight: bool;
     let mut non_overlapping_pairs: bool;
     let mut pair_one: [char; 2];
-    let pairs: HashSet<&str> = HashSet::from(["aa", "bb", "cc", "dd", "ee", "ff", "gg", "hh", "ii", "jj", "kk", "ll", "mm", "nn", "oo", "pp", "qq", "rr", "ss", "tt", "uu", "vv", "ww", "xx", "yy", "zz"]);
+    let pairs: HashSet<&str> = HashSet::from([
+        "aa", "bb", "cc", "dd", "ee", "ff", "gg", "hh", "ii", "jj", "kk", "ll", "mm", "nn", "oo",
+        "pp", "qq", "rr", "ss", "tt", "uu", "vv", "ww", "xx", "yy", "zz",
+    ]);
     loop {
         no_iol = false;
         increasing_straight = false;
@@ -21,7 +25,7 @@ fn main() {
             for (idx, ch) in pswd.iter_mut().enumerate() {
                 if ['i', 'o', 'l'].contains(ch) {
                     *ch = unsafe { char::from_u32_unchecked(*ch as u32 + 1) };
-                    pswd[idx + 1 ..].fill('a');
+                    pswd[idx + 1..].fill('a');
                     // had_iol = true;
                     break;
                 }
@@ -30,7 +34,8 @@ fn main() {
 
         for ch_window in pswd.windows(3) {
             if ch_window[0] as u32 + 1 == ch_window[1] as u32
-            && ch_window[1] as u32 + 1 == ch_window[2] as u32 {
+                && ch_window[1] as u32 + 1 == ch_window[2] as u32
+            {
                 increasing_straight = true;
                 break;
             }
@@ -45,12 +50,13 @@ fn main() {
 
         for ch_window in pswd.windows(2) {
             if pairs.contains(&String::from_iter(ch_window)[..])
-            && (pair_one[0], pair_one[1]) != (ch_window[0], ch_window[1]) {
+                && (pair_one[0], pair_one[1]) != (ch_window[0], ch_window[1])
+            {
                 non_overlapping_pairs = true;
                 break;
             }
         }
-        
+
         if no_iol && (increasing_straight && non_overlapping_pairs) {
             break;
         }
@@ -61,7 +67,7 @@ fn main() {
     println!("{}", pswd.iter().collect::<String>());
 }
 
-fn mutate(pswd: &mut Vec<char>) {
+fn mutate(pswd: &mut [char]) {
     for ch in pswd.iter_mut().rev() {
         if *ch == 'z' {
             *ch = 'a';

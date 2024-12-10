@@ -53,14 +53,14 @@ fn main() {
                         reindeer.flown = 0;
                         reindeer.state = Inactive;
                     }
-                },
+                }
                 Inactive => {
                     reindeer.rested += 1;
                     if reindeer.rested == reindeer.rest_time as u16 {
                         reindeer.rested = 0;
                         reindeer.state = Active;
                     }
-                },
+                }
             }
 
             max_dist = max_dist.max(reindeer.dist);

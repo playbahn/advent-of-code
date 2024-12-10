@@ -49,14 +49,14 @@ fn devolve_molecule(
     if !(steps < *min_steps) {
         return;
     }
-    
+
     // println!("{intermediate}");
     match &intermediate[..] {
         // e => HF  // e => NAl // e => OMg
         "HF" | "NAl" | "OMg" => {
             *min_steps = (*min_steps).min(steps);
             println!("{min_steps}");
-        },
+        }
 
         _ => {
             for (precursor, results) in replacements {

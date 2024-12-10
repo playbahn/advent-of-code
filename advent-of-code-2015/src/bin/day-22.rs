@@ -68,7 +68,7 @@ fn main() {
         }
         simulate_duel(player, &spells, 55, &mut mana_least);
     }
-    
+
     println!("FROM MAIN: LEAST MANA SPENT: {}", mana_least);
 }
 
@@ -81,7 +81,7 @@ fn simulate_duel(
     if !(player.mana_spent < *mana_least) {
         return;
     }
-    
+
     // PLAYER'S TURN // SPELLS CASTED PRIOR
     // =================================================
     // PART 2
@@ -90,14 +90,14 @@ fn simulate_duel(
         return;
     }
     // PART 2
-    
+
     if player.recharge_just_now {
         player.recharge_just_now = false;
     } else if player.recharge > 0 {
         player.mana_left += 101;
         player.recharge -= 1;
     }
-    
+
     if player.poison_just_now {
         player.poison_just_now = false;
     } else if player.poison > 0 {
@@ -110,7 +110,7 @@ fn simulate_duel(
     } else if player.shield > 0 {
         player.shield -= 1;
     }
-    
+
     if player.magic_missile == 1 {
         boss_hp -= 4;
         player.magic_missile -= 1;
@@ -119,12 +119,12 @@ fn simulate_duel(
         player.hp += 2;
         player.drain -= 1;
     }
-    
+
     if boss_hp < 1 {
         *mana_least = (*mana_least).min(player.mana_spent);
         return;
     }
-    
+
     // ====================================================
     // BOSS'S TURN
     // ====================================================
@@ -132,12 +132,12 @@ fn simulate_duel(
         player.mana_left += 101;
         player.recharge -= 1;
     }
-    
+
     if player.poison > 0 {
         boss_hp -= 3;
         player.poison -= 1;
     }
-    
+
     if boss_hp < 1 {
         *mana_least = (*mana_least).min(player.mana_spent);
         return;
@@ -153,16 +153,46 @@ fn simulate_duel(
     if player.hp < 1 {
         return;
     }
-    
+
     // ======================================================
     // PLAYER'S NEXT TURN -- ONLY SPELL CAST
     for spell in spells.iter().filter(|spell| match **spell {
-        "Magic Missile" => if player.mana_left > 53 { true } else { false },
-        "Drain" => if player.mana_left > 73 { true } else { false },
-        "Shield" => if player.mana_left > 113 && player.shield < 2 { true } else { false },
-        "Poison" => if player.mana_left > 173 && player.poison < 2 { true } else { false },
-        "Recharge" => if player.mana_left > 229 && player.recharge < 2 { true } else { false },
-        _ => panic!()
+        "Magic Missile" => {
+            if player.mana_left > 53 {
+                true
+            } else {
+                false
+            }
+        }
+        "Drain" => {
+            if player.mana_left > 73 {
+                true
+            } else {
+                false
+            }
+        }
+        "Shield" => {
+            if player.mana_left > 113 && player.shield < 2 {
+                true
+            } else {
+                false
+            }
+        }
+        "Poison" => {
+            if player.mana_left > 173 && player.poison < 2 {
+                true
+            } else {
+                false
+            }
+        }
+        "Recharge" => {
+            if player.mana_left > 229 && player.recharge < 2 {
+                true
+            } else {
+                false
+            }
+        }
+        _ => panic!(),
     }) {
         let mut player: PlayerStats = player.clone();
         match *spell {

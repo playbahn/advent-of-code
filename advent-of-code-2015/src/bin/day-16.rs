@@ -15,7 +15,7 @@ fn main() {
     let aunt_list: String = fs::read_to_string("input/day16.txt").unwrap();
 
     let mut aunts: Vec<i8> = Vec::new();
-    
+
     let mut probability: i8;
 
     for aunt in aunt_list.lines() {
@@ -25,7 +25,7 @@ fn main() {
             .collect();
 
         probability = 0;
-        
+
         for features in aunt.chunks(2).skip(1) {
             match features[0] {
                 "children" => {
@@ -34,79 +34,79 @@ fn main() {
                     } else {
                         probability -= 1;
                     }
-                },
+                }
                 "cats" => {
                     if features[1].parse::<i8>().unwrap() > CATS {
                         probability += 1;
                     } else {
                         probability -= 1;
                     }
-                },
+                }
                 "samoyeds" => {
                     if features[1].parse::<i8>().unwrap() == SAMOYEDS {
                         probability += 1;
                     } else {
                         probability -= 1;
                     }
-                },
+                }
                 "pomeranians" => {
                     if features[1].parse::<i8>().unwrap() < POMERANIANS {
                         probability += 1;
                     } else {
                         probability -= 1;
                     }
-                },
+                }
                 "akitas" => {
                     if features[1].parse::<i8>().unwrap() == AKITAS {
                         probability += 1;
                     } else {
                         probability -= 1;
                     }
-                },
+                }
                 "vizslas" => {
                     if features[1].parse::<i8>().unwrap() == VIZSLAS {
                         probability += 1;
                     } else {
                         probability -= 1;
                     }
-                },
+                }
                 "goldfish" => {
                     if features[1].parse::<i8>().unwrap() < GOLDFISH {
                         probability += 1;
                     } else {
                         probability -= 1;
                     }
-                },
+                }
                 "trees" => {
                     if features[1].parse::<i8>().unwrap() > TREES {
                         probability += 1;
                     } else {
                         probability -= 1;
                     }
-                },
+                }
                 "cars" => {
                     if features[1].parse::<i8>().unwrap() == CARS {
                         probability += 1;
                     } else {
                         probability -= 1;
                     }
-                },
+                }
                 "perfumes:" => {
                     if features[1].parse::<i8>().unwrap() == PERFUMES {
                         probability += 1;
                     } else {
                         probability -= 1;
                     }
-                },
-                _ => {},
+                }
+                _ => {}
             }
         }
-        
+
         aunts.push(probability);
     }
 
     // println!("{:?}", aunts);
-    
+
     let mut highest_probability: i8 = i8::MIN;
     let mut probable_ids: Vec<usize> = Vec::new();
 

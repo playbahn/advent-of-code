@@ -1,7 +1,9 @@
 use dinglebit_combinatorics::*;
 
 fn main() {
-    let containers: [u8; 20] = [1, 1, 3, 3, 3, 5, 11, 11, 15, 19, 26, 28, 30, 31, 32, 32, 36, 36, 46, 47];
+    let containers: [u8; 20] = [
+        1, 1, 3, 3, 3, 5, 11, 11, 15, 19, 26, 28, 30, 31, 32, 32, 36, 36, 46, 47,
+    ];
     let mut combinations: Vec<Vec<usize>> = Vec::new();
     let mut suitable_combinations: usize = 0;
 

@@ -33,11 +33,11 @@ fn main() {
                 }
 
                 match (config_old[x][y], neighbor_lights_on) {
-                    ('#', 2|3) => config_new[x][y] = '#',
-                    ('#',  _ ) => config_new[x][y] = '.',
-                    ('.',   3) => config_new[x][y] = '#',
-                    ('.',  _ ) => config_new[x][y] = '.',
-                    _ => {},
+                    ('#', 2 | 3) => config_new[x][y] = '#',
+                    ('#', _) => config_new[x][y] = '.',
+                    ('.', 3) => config_new[x][y] = '#',
+                    ('.', _) => config_new[x][y] = '.',
+                    _ => {}
                 }
             }
         }
