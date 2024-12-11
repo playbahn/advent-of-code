@@ -35,7 +35,7 @@ fn get_obs(guard: Coords, facing: Facing, obstacles: &[Coords]) -> Option<&Coord
     }
 }
 
-fn simulate_path(obstacles: &[Coords], unique: &mut HashSet<Coords>) {
+fn get_uniques(obstacles: &[Coords], unique: &mut HashSet<Coords>) {
     let mut guard = GUARD_INIT;
     let mut facing = Facing::North;
 
@@ -89,7 +89,7 @@ fn put_guard_to_loop(obstacles: &[Coords]) -> bool {
     let mut guard = GUARD_INIT;
     let mut facing = Facing::North;
     let mut faced: HashSet<(Coords, Facing)> = HashSet::new();
-    
+
     loop {
         match facing {
             Facing::North => {
@@ -150,7 +150,7 @@ fn main() {
 
     // part 1
     let mut uniques: HashSet<Coords> = HashSet::from([GUARD_INIT]);
-    simulate_path(&obstacles, &mut uniques);
+    get_uniques(&obstacles, &mut uniques);
     println!("part1: {}", uniques.len());
 
     // part 2
