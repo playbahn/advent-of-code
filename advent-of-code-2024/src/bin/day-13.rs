@@ -26,18 +26,7 @@ fn main() {
         // no solutions: a1/a2 == b1/b2 != c1/c2
         // unique solution: a1/a2 != b1/b2
         // NOT required to check any, print debugging
-        // shows all cases have unique solutions
-        // if consts[0][0] / consts[0][1] != consts[1][0] / consts[1][1] {
-        //     println!("unique");
-        // } else if consts[1][0] / consts[1][1] != consts[2][0] / consts[2][1] {
-        //     println!("none: pt1");
-        // } else if consts[1][0] / consts[1][1]
-        //     != (consts[2][0] + CORRECTION as f64) / (consts[2][1] + CORRECTION as f64)
-        // {
-        //     println!("none: pt2");
-        // } else {
-        //     println!("infinite");
-        // }
+        // shows all cases have unique solutions, for both parts
 
         // `consts`:
         // a1: [0][0], b1: [1][0], c1: [2][0]

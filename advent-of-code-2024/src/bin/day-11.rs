@@ -7,7 +7,7 @@ fn count_stones(stones: Vec<String>, blinks: u8) -> usize {
     }
 
     let mut count = 0usize;
-    
+
     stones.iter().for_each(|stone| {
         let new_stones: Vec<String> = if stone == "0" {
             vec!["1".to_string()]
