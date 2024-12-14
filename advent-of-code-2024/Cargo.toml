@@ -108,4 +108,5 @@ name = "day25"
 path = "src/bin/day-25.rs"
 
 [dependencies]
+bmp = "0.5.0"
 memoize = "0.4.2"
