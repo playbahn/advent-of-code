@@ -1,5 +1,6 @@
-/// NOT TO SELF - DO NOT EVER CREATE/USE/IMPLEMENT CRATE TYPES
-/// (e.g. STRUCTS) FOR PROBLEM SOLVING EVER AGAIN
+/// NOT TO SELF - DO NOT EVER CREATE/USE/IMPLEMENT
+/// CRATE TYPES (e.g. STRUCTS) FOR PROBLEM SOLVING
+/// EVER AGAIN - OR MAYBE DO I GUESS
 use std::collections::HashSet;
 
 const INPUT: &str = "input/day-14.txt";
@@ -120,7 +121,7 @@ fn main() {
         }
         
         img.save(format!("img/{}.bmp", time)).unwrap();
-        for set_pixel in &mut set_pixels {
+        for set_pixel in &set_pixels {
             img.set_pixel(set_pixel.x as u32, set_pixel.y as u32, bmp::consts::BLACK);
         }
         
