@@ -1,10 +1,14 @@
 const INPUT: &str = "input/day-17.txt";
 
+// *** NOTE ***
+// Solution fine-grained for my specific input,
+// WILL NOT work for anybody else for which the effective
+// program is different than the `_program: loop`
 fn program(mut a: u64) -> Vec<u8> {
     let (mut b, mut c);
     let mut out: Vec<u8> = vec![];
 
-    loop {
+    '_program: loop {
         b = (a as u8 & 0b111) ^ 0b010;
         c = (a >> b) as u8 & 0b111;
         out.push(b ^ c ^ 0b011);
