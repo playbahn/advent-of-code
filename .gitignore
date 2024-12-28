@@ -1,4 +1,5 @@
 target
-out*.txt
+out.txt
+err.txt
 input
 img

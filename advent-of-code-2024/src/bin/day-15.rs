@@ -162,9 +162,9 @@ fn main() {
 
     let steps = input
         .lines()
-        .skip_while(|line| !line.starts_with(['^', 'v', '<', '>']))
+        .skip_while(|line| line.starts_with(['#', '\n']))
         .flat_map(|steps| steps.chars());
-
+    
     // part 1
     let mut robot: Point = ROBOT;
     for step in steps.clone() {
