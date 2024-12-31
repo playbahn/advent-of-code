@@ -2,21 +2,23 @@ use std::collections::{HashSet, VecDeque};
 use std::io::Write;
 use std::time::Duration;
 
-const INPUT: &str = "input/day-15-eg-large.txt";
-const EDGE: usize = 10;
-const STEP_RATE: u64 = 0;
+const INPUT: &str = "input/day-15-eg-small.txt";
+const EDGE: usize = 7;
+const STEP_RATE: u64 = 250;
 
 #[derive(PartialEq, Clone, Copy)]
-enum Wall {
+enum WallState {
     Hit,
-    Idle,
+    NotHit,
 }
 
-impl std::fmt::Display for Wall {
+use WallState::*;
+
+impl std::fmt::Display for WallState {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Wall::Idle => write!(f, "\x1B[;1m#\x1B[m"),
-            Wall::Hit => write!(f, "\x1B[;1;31m#\x1B[m"),
+            NotHit => write!(f, "\x1B[;1m#\x1B[m"),
+            Hit => write!(f, "\x1B[;1;31m#\x1B[m"),
         }
     }
 }
@@ -27,28 +29,32 @@ enum BoxEdge {
     Right,
 }
 
+use BoxEdge::*;
+
 impl std::fmt::Display for BoxEdge {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            BoxEdge::Left => write!(f, "["),
-            BoxEdge::Right => write!(f, "]"),
+            Left => write!(f, "["),
+            Right => write!(f, "]"),
         }
     }
 }
 
 #[derive(PartialEq, Clone, Copy)]
-enum Box {
+enum BoxState {
     Blocked(BoxEdge),
     Moved(BoxEdge),
     Idle(BoxEdge),
 }
 
-impl std::fmt::Display for Box {
+use BoxState::*;
+
+impl std::fmt::Display for BoxState {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Box::Blocked(box_edge) => write!(f, "\x1B[;1;31m{box_edge}\x1b[m"),
-            Box::Moved(box_edge) => write!(f, "\x1B[;1;32m{box_edge}\x1b[m"),
-            Box::Idle(box_edge) => write!(f, "\x1B[1;33m{box_edge}\x1b[m"),
+            Blocked(box_edge) => write!(f, "\x1B[;1;31m{box_edge}\x1b[m"),
+            Moved(box_edge) => write!(f, "\x1B[;1;32m{box_edge}\x1b[m"),
+            Idle(box_edge) => write!(f, "\x1B[1;33m{box_edge}\x1b[m"),
         }
     }
 }
@@ -57,18 +63,18 @@ impl std::fmt::Display for Box {
 enum Tile {
     FreeSpace,
     Robot,
-    Wall(Wall),
-    Box(Box),
+    Wall(WallState),
+    Box(BoxState),
 }
+
+use Tile::*;
 
 impl Tile {
     fn idle(&mut self) {
-        match self {
-            Tile::Wall(Wall::Hit) => *self = Tile::Wall(Wall::Idle),
-            Tile::Box(Box::Blocked(box_edge) | Box::Moved(box_edge)) => {
-                *self = Tile::Box(Box::Idle(*box_edge))
-            }
-            _ => (),
+        *self = match self {
+            Wall(Hit) => Wall(NotHit),
+            Box(Blocked(box_edge) | Moved(box_edge)) => Box(Idle(*box_edge)),
+            _ => *self,
         }
     }
 }
@@ -76,17 +82,17 @@ impl Tile {
 impl std::fmt::Display for Tile {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Tile::FreeSpace => write!(f, "\x1B[;2;37m.\x1B[m"),
-            Tile::Robot => write!(f, "\x1B[;1;36m@\x1B[m"),
-            Tile::Wall(wall) => write!(f, "{wall}"),
-            Tile::Box(state) => write!(f, "{state}"),
+            FreeSpace => write!(f, "\x1B[;2;37m.\x1B[m"),
+            Robot => write!(f, "\x1B[;1;36m@\x1B[m"),
+            Wall(wall) => write!(f, "{wall}"),
+            Box(state) => write!(f, "{state}"),
         }
     }
 }
 
 enum CanShift {
     Yes(VecDeque<(Point, Point)>),
-    No(HashSet<Point>),
+    No(Vec<Point>),
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
@@ -103,7 +109,7 @@ impl Point {
     fn take_step(&self, step: char, map: &[[Tile; EDGE]; EDGE * 2]) -> CanShift {
         let mut shifts: VecDeque<(Self, Self)> = VecDeque::new();
 
-        let mut blocked = false;
+        let mut blocked: Vec<Self> = Vec::new();
         let mut visited: HashSet<Self> = HashSet::new();
 
         let next = match step {
@@ -116,32 +122,31 @@ impl Point {
             _ => panic!(),
         };
 
-        if map[next.x][next.y] == Tile::FreeSpace {
+        if map[next.x][next.y] == FreeSpace {
             shifts.push_back((*self, next));
         } else {
             next.visit(step, &mut blocked, &mut shifts, &mut visited, map);
             shifts.push_front((*self, next));
         }
 
-        if blocked {
-            CanShift::No(HashSet::from_iter(
-                shifts.into_iter().flat_map(|(from, to)| vec![from, to]),
-            ))
-        } else {
+        if blocked.is_empty() {
             CanShift::Yes(shifts)
+        } else {
+            blocked.extend(shifts.into_iter().map(|(from, _)| from));
+            CanShift::No(blocked)
         }
     }
 
     fn visit(
         &self,
         step: char,
-        blocked: &mut bool,
+        blocks: &mut Vec<Self>,
         shifts: &mut VecDeque<(Self, Self)>,
         visited: &mut HashSet<Self>,
         map: &[[Tile; EDGE]; EDGE * 2],
     ) {
-        if map[self.x][self.y] == Tile::Wall(Wall::Idle) {
-            *blocked = true;
+        if map[self.x][self.y] == Wall(NotHit) {
+            blocks.push(*self);
             return;
         } else if !visited.insert(*self) {
             return;
@@ -150,19 +155,19 @@ impl Point {
         let (next, can_shift) = match step {
             '^' => (
                 Self::new(self.x, self.y - 1),
-                map[self.x][self.y - 1] == Tile::FreeSpace,
+                map[self.x][self.y - 1] == FreeSpace,
             ),
             'v' => (
                 Self::new(self.x, self.y + 1),
-                map[self.x][self.y + 1] == Tile::FreeSpace,
+                map[self.x][self.y + 1] == FreeSpace,
             ),
             '<' => (
                 Self::new(self.x - 1, self.y),
-                map[self.x - 1][self.y] == Tile::FreeSpace,
+                map[self.x - 1][self.y] == FreeSpace,
             ),
             '>' => (
                 Self::new(self.x + 1, self.y),
-                map[self.x + 1][self.y] == Tile::FreeSpace,
+                map[self.x + 1][self.y] == FreeSpace,
             ),
             _ => panic!(),
         };
@@ -170,16 +175,16 @@ impl Point {
         if can_shift {
             shifts.push_back((*self, next));
         } else {
-            next.visit(step, blocked, shifts, visited, map);
+            next.visit(step, blocks, shifts, visited, map);
             shifts.push_front((*self, next));
         }
 
         match (map[self.x][self.y], step) {
-            (Tile::Box(Box::Idle(BoxEdge::Left)), '^' | 'v') => {
-                Self::new(self.x + 1, self.y).visit(step, blocked, shifts, visited, map);
+            (Box(Idle(Left)), '^' | 'v') => {
+                Self::new(self.x + 1, self.y).visit(step, blocks, shifts, visited, map);
             }
-            (Tile::Box(Box::Idle(BoxEdge::Right)), '^' | 'v') => {
-                Self::new(self.x - 1, self.y).visit(step, blocked, shifts, visited, map);
+            (Box(Idle(Right)), '^' | 'v') => {
+                Self::new(self.x - 1, self.y).visit(step, blocks, shifts, visited, map);
             }
             _ => (),
         }
@@ -194,9 +199,9 @@ fn main() {
     .unwrap();
 
     let input = std::fs::read_to_string(INPUT).unwrap();
-    let mut wide_map: [[Tile; EDGE]; EDGE * 2] = [[Tile::FreeSpace; EDGE]; EDGE * 2];
+    let mut wide_map: [[Tile; EDGE]; EDGE * 2] = [[FreeSpace; EDGE]; EDGE * 2];
 
-    let mut robot: Point = Point::new(0, 0);
+    let mut robot: Point = Point::new(usize::MAX, usize::MAX);
 
     input
         .lines()
@@ -205,16 +210,13 @@ fn main() {
         .for_each(|(y, line)| {
             line.char_indices().for_each(|(x, tile)| {
                 (wide_map[x * 2][y], wide_map[x * 2 + 1][y]) = match tile {
-                    'O' => (
-                        Tile::Box(Box::Idle(BoxEdge::Left)),
-                        Tile::Box(Box::Idle(BoxEdge::Right)),
-                    ),
+                    'O' => (Box(Idle(Left)), Box(Idle(Right))),
                     '@' => {
                         robot = Point::new(x << 1, y);
-                        (Tile::Robot, Tile::FreeSpace)
+                        (Robot, FreeSpace)
                     }
-                    '#' => (Tile::Wall(Wall::Idle), Tile::Wall(Wall::Idle)),
-                    '.' => (Tile::FreeSpace, Tile::FreeSpace),
+                    '#' => (Wall(NotHit), Wall(NotHit)),
+                    '.' => (FreeSpace, FreeSpace),
                     _ => panic!(),
                 };
             })
@@ -255,12 +257,9 @@ fn main() {
 
         (1..dim_ub).for_each(|n| print!("{}", steps[step.0 + n]));
 
-        println!(
-            " \x1B[;1;96m({:>steps_len_s$}/{})\x1B[m",
-            step_count, steps_total
-        );
+        println!(" \x1B[;1;96m({step_count:>steps_len_s$}/{steps_total})\x1B[m");
 
-        std::thread::sleep(Duration::from_millis(STEP_RATE));
+        // std::thread::sleep(Duration::from_millis(STEP_RATE));
     };
 
     let mut updates: HashSet<Point> = HashSet::new();
@@ -275,7 +274,7 @@ fn main() {
 
     (1..EDGE - 1).for_each(|y| {
         (2..2 * (EDGE - 1)).for_each(|x| {
-            if let Tile::Box(Box::Idle(BoxEdge::Left)) = wide_map[x][y] {
+            if let Box(Idle(Left)) = wide_map[x][y] {
                 gps_acc += x + 100 * y;
             }
         })
@@ -291,7 +290,7 @@ fn main() {
         println!();
     });
 
-    let mut user_input: String = String::new();
+    // let mut user_input: String = String::new();
 
     for step in steps {
         // update the cells from prev iteration for current iteration
@@ -305,27 +304,25 @@ fn main() {
                     updates.insert(from);
                     updates.insert(to);
                     wide_map[to.x][to.y] = match wide_map[from.x][from.y] {
-                        Tile::Box(Box::Idle(BoxEdge::Left)) => {
+                        Box(Idle(Left)) => {
                             gps_acc -= from.x + 100 * from.y;
                             gps_acc += to.x + 100 * to.y;
-                            Tile::Box(Box::Moved(BoxEdge::Left))
+                            Box(Moved(Left))
                         }
-                        Tile::Box(Box::Idle(BoxEdge::Right)) => {
-                            Tile::Box(Box::Moved(BoxEdge::Right))
-                        }
+                        Box(Idle(Right)) => Box(Moved(Right)),
                         _ => wide_map[from.x][from.y],
                     };
 
-                    wide_map[from.x][from.y] = Tile::FreeSpace;
+                    wide_map[from.x][from.y] = FreeSpace;
                     robot = to;
                 }
             }
             CanShift::No(blocks) => {
-                for blocked in blocks {
-                    updates.insert(blocked);
-                    wide_map[blocked.x][blocked.y] = match wide_map[blocked.x][blocked.y] {
-                        Tile::Wall(Wall::Idle) => Tile::Wall(Wall::Hit),
-                        Tile::Box(Box::Idle(box_edge)) => Tile::Box(Box::Blocked(box_edge)),
+                for block in blocks {
+                    updates.insert(block);
+                    wide_map[block.x][block.y] = match wide_map[block.x][block.y] {
+                        Wall(NotHit) => Wall(Hit),
+                        Box(Idle(box_edge)) => Box(Blocked(box_edge)),
                         tile => tile,
                     }
                 }
@@ -341,13 +338,13 @@ fn main() {
         });
 
         print!("\x1B[2;17H\x1B[;93m{gps_acc}\x1B[m");
-        // flush prev iteration + current iteration updates
+        // flush prev & current iteration updates, and new gpc_acc
         std::io::stdout().flush().unwrap();
 
         // for taking screenshots
-        std::io::stdin()
-            .read_line(&mut user_input)
-            .expect("Failed to read line");
+        // std::io::stdin()
+        //     .read_line(&mut user_input)
+        //     .expect("Failed to read line");
 
         std::thread::sleep(Duration::from_millis(STEP_RATE));
     }
