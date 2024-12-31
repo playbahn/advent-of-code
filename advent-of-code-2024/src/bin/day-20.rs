@@ -1,14 +1,3 @@
-use std::cmp::Ordering::*;
-use std::collections::{HashMap, HashSet};
-
-// const INPUT: &str = "input/day-20-eg.txt";
-// const GO: Go = Up;
-// const EDGE: usize = 15;
-// const START: Point = Point { x: 1, y: 3 };
-// const END: Point = Point { x: 5, y: 7 };
-// const SAVEDLB1: usize = 0;
-// const SAVEDLB2: usize = 49;
-
 const INPUT: &str = "input/day-20.txt";
 const GO: Go = Left;
 const EDGE: usize = 141;
@@ -17,7 +6,7 @@ const END: Point = Point { x: 7, y: 93 };
 const SAVEDLB1: usize = 99;
 const SAVEDLB2: usize = 99;
 
-#[derive(PartialEq, Eq, Hash, Clone, Copy)]
+#[derive(PartialEq, Clone, Copy)]
 struct Point {
     x: usize,
     y: usize,
@@ -41,19 +30,7 @@ impl Tile {
     }
 }
 
-#[derive(PartialEq, Eq, Hash)]
-struct Cheat {
-    start: Point,
-    end: Point,
-}
-
-impl Cheat {
-    fn new(start: Point, end: Point) -> Self {
-        Self { start, end }
-    }
-}
-
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, PartialEq)]
 enum Go {
     Up,
     Down,
@@ -63,71 +40,36 @@ enum Go {
 
 use Go::*;
 
-fn get_neighbors(pt: &Point) -> Vec<Point> {
-    let mut neighbors = vec![];
-
-    if pt.x > 0 {
-        neighbors.push(Point::new(pt.x - 1, pt.y));
-    }
-
-    if pt.x + 1 < EDGE {
-        neighbors.push(Point::new(pt.x + 1, pt.y));
-    }
-
-    if pt.y > 0 {
-        neighbors.push(Point::new(pt.x, pt.y - 1));
-    }
-
-    if pt.y + 1 < EDGE {
-        neighbors.push(Point::new(pt.x, pt.y + 1));
-    }
-
-    neighbors
-}
-
 fn count_cheats(s: Point, map: &[[Tile; EDGE]; EDGE]) -> usize {
-    let mut ends: HashMap<Point, usize> = HashMap::new();
-    let mut reachable: HashMap<Point, usize> = HashMap::new();
-    let mut outmost_cur: HashSet<Point> = HashSet::new();
-    let mut outmost_next: HashSet<Point> = HashSet::new();
+    let mut count = 0usize;
 
-    outmost_cur.insert(s);
+    (1..21).for_each(|dist| {
+        count += (0..dist + 1)
+            .flat_map(|x| {
+                let mut at_manhattan_dist: Vec<(isize, isize)> = vec![
+                    (s.x as isize - x, s.y as isize + dist - x),
+                    (s.x as isize + x, s.y as isize - dist + x),
+                ];
 
-    for cur_time in 0..20 {
-        if outmost_cur.is_empty() {
-            break;
-        }
-
-        for outmost_pt in &outmost_cur {
-            for n in get_neighbors(outmost_pt) {
-                if !reachable.contains_key(&n) {
-                    outmost_next.insert(n);
+                if x != 0 && x != dist {
+                    at_manhattan_dist.push((s.x as isize + x, s.y as isize + dist - x));
+                    at_manhattan_dist.push((s.x as isize - x, s.y as isize - dist + x));
                 }
-            }
-        }
 
-        reachable.extend(outmost_cur.drain().map(|pt| (pt, cur_time)));
+                at_manhattan_dist
+            })
+            .filter(|(x, y)| {
+                (-1 < *x && *x < EDGE as isize)
+                    && (-1 < *y && *y < EDGE as isize)
+                    && map[*x as usize][*y as usize]
+                        .time
+                        .checked_sub(map[s.x][s.y].time)
+                        .is_some_and(|diff| diff > SAVEDLB2 + dist as usize)
+            })
+            .count();
+    });
 
-        outmost_cur.extend(outmost_next.drain());
-    }
-
-    reachable.remove(&s);
-
-    for (wall, cheat_time) in &reachable {
-        for f in get_neighbors(wall) {
-            if map[f.x][f.y].obj != '#' {
-                if let Some(diff) = map[f.x][f.y].time.checked_sub(map[s.x][s.y].time) {
-                    if diff > SAVEDLB2 + cheat_time + 1 {
-                        ends.entry(f)
-                            .and_modify(|saved| *saved = (*saved).max(diff - (cheat_time + 1)))
-                            .or_insert(diff - (cheat_time + 1));
-                    }
-                }
-            }
-        }
-    }
-
-    ends.len()
+    count
 }
 
 fn main() {
@@ -208,9 +150,9 @@ fn main() {
         }
     } // 'run: loop
 
-    let mut cheats: HashSet<Cheat> = HashSet::new();
+    let mut part1 = 0usize;
 
-    '_part1: for y in 1..EDGE - 1 {
+    for y in 1..EDGE - 1 {
         for x in 1..EDGE - 1 {
             if map[x][y].obj != '#' {
                 continue;
@@ -224,20 +166,34 @@ fn main() {
             for opp in opposites {
                 if map[opp.0.x][opp.0.y].obj != '#'
                     && map[opp.1.x][opp.1.y].obj != '#'
-                    && (map[opp.0.x][opp.0.y].time).abs_diff(map[opp.1.x][opp.1.y].time)
+                    && map[opp.0.x][opp.0.y]
+                        .time
+                        .abs_diff(map[opp.1.x][opp.1.y].time)
                         > SAVEDLB1 + 2
                 {
-                    match map[opp.0.x][opp.0.y].time.cmp(&map[opp.1.x][opp.1.y].time) {
-                        Less => cheats.insert(Cheat::new(opp.0, opp.1)),
-                        Greater => cheats.insert(Cheat::new(opp.1, opp.0)),
-                        Equal => panic!(),
-                    };
+                    part1 += 1;
                 }
             }
         }
     }
 
-    println!("part1: {}", cheats.len());
+    println!("part1: {part1}");
+
+    // let mut saves = vec![];
+
+    // path.iter()
+    //     .take(path.len() - (SAVEDLB2 + 1) - 2)
+    //     .for_each(|s| saves.extend(count_cheats(*s, &map)));
+
+    // let mut unique = saves.clone();
+
+    // unique.sort();
+    // unique.dedup();
+
+    // for saved in unique {
+    //     let count = saves.iter().filter(|c_save| **c_save == saved).count();
+    //     println!("There are {count} cheats that save {saved} picoseconds")
+    // }
 
     let part2 = path
         .iter()
@@ -256,11 +212,5 @@ impl std::fmt::Debug for Tile {
 impl std::fmt::Debug for Point {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "({}, {})", self.x, self.y)
-    }
-}
-
-impl std::fmt::Debug for Cheat {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?} -> {:?}", self.start, self.end)
     }
 }
