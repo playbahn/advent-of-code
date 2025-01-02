@@ -1,10 +1,8 @@
 const INPUT: &str = "input/day-20.txt";
-const GO: Go = Left;
 const EDGE: usize = 141;
 const START: Point = Point { x: 17, y: 75 };
 const END: Point = Point { x: 7, y: 93 };
-const SAVEDLB1: usize = 99;
-const SAVEDLB2: usize = 99;
+const SAVEDLB: usize = 99;
 
 #[derive(PartialEq, Clone, Copy)]
 struct Point {
@@ -64,7 +62,7 @@ fn count_cheats(s: Point, map: &[[Tile; EDGE]; EDGE]) -> usize {
                     && map[*x as usize][*y as usize]
                         .time
                         .checked_sub(map[s.x][s.y].time)
-                        .is_some_and(|diff| diff > SAVEDLB2 + dist as usize)
+                        .is_some_and(|diff| diff > SAVEDLB + dist as usize)
             })
             .count();
     });
@@ -81,7 +79,7 @@ fn main() {
         .enumerate()
         .for_each(|(y, row)| row.char_indices().for_each(|(x, obj)| map[x][y].obj = obj));
 
-    let mut go = GO;
+    let mut go = Left;
     let mut time = 0usize;
     let mut cur = START;
     let mut path: Vec<Point> = vec![START];
@@ -169,7 +167,7 @@ fn main() {
                     && map[opp.0.x][opp.0.y]
                         .time
                         .abs_diff(map[opp.1.x][opp.1.y].time)
-                        > SAVEDLB1 + 2
+                        > SAVEDLB + 2
                 {
                     part1 += 1;
                 }
@@ -179,38 +177,10 @@ fn main() {
 
     println!("part1: {part1}");
 
-    // let mut saves = vec![];
-
-    // path.iter()
-    //     .take(path.len() - (SAVEDLB2 + 1) - 2)
-    //     .for_each(|s| saves.extend(count_cheats(*s, &map)));
-
-    // let mut unique = saves.clone();
-
-    // unique.sort();
-    // unique.dedup();
-
-    // for saved in unique {
-    //     let count = saves.iter().filter(|c_save| **c_save == saved).count();
-    //     println!("There are {count} cheats that save {saved} picoseconds")
-    // }
-
     let part2 = path
         .iter()
-        .take(path.len() - (SAVEDLB2 + 1) - 2)
+        .take(path.len() - (SAVEDLB + 1) - 2)
         .fold(0, |count, s| count + count_cheats(*s, &map));
 
     println!("part2: {part2}");
-}
-
-impl std::fmt::Debug for Tile {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "({}, {})", self.obj, self.time)
-    }
-}
-
-impl std::fmt::Debug for Point {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "({}, {})", self.x, self.y)
-    }
 }
