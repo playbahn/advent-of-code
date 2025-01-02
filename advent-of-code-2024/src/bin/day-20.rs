@@ -38,39 +38,37 @@ enum Go {
 
 use Go::*;
 
-fn count_cheats(s: Point, map: &[[Tile; EDGE]; EDGE]) -> usize {
-    let mut count = 0usize;
+fn count_cheats(start: Point, map: &[[Tile; EDGE]; EDGE]) -> usize {
+    (1..21).fold(0, |count_before_dist, dist| {
+        count_before_dist
+            + (0..dist + 1)
+                .flat_map(|x| {
+                    let mut at_dist: Vec<(isize, isize)> = vec![
+                        (start.x as isize - x, start.y as isize + dist - x),
+                        (start.x as isize + x, start.y as isize - dist + x),
+                        (start.x as isize + x, start.y as isize + dist - x),
+                        (start.x as isize - x, start.y as isize - dist + x),
+                    ];
 
-    (1..21).for_each(|dist| {
-        count += (0..dist + 1)
-            .flat_map(|x| {
-                let mut at_manhattan_dist: Vec<(isize, isize)> = vec![
-                    (s.x as isize - x, s.y as isize + dist - x),
-                    (s.x as isize + x, s.y as isize - dist + x),
-                ];
+                    if x == 0 || x == dist {
+                        unsafe { at_dist.set_len(2) }
+                    }
 
-                if x != 0 && x != dist {
-                    at_manhattan_dist.push((s.x as isize + x, s.y as isize + dist - x));
-                    at_manhattan_dist.push((s.x as isize - x, s.y as isize - dist + x));
-                }
-
-                at_manhattan_dist
-            })
-            .filter(|(x, y)| {
-                (-1 < *x && *x < EDGE as isize)
-                    && (-1 < *y && *y < EDGE as isize)
-                    && map[*x as usize][*y as usize]
-                        .time
-                        .checked_sub(map[s.x][s.y].time)
-                        .is_some_and(|diff| diff > SAVEDLB + dist as usize)
-            })
-            .count();
-    });
-
-    count
+                    at_dist
+                })
+                .filter(|(x, y)| {
+                    (-1 < *x && *x < EDGE as isize)
+                        && (-1 < *y && *y < EDGE as isize)
+                        && (map[*x as usize][*y as usize].time)
+                            .checked_sub(map[start.x][start.y].time)
+                            .is_some_and(|diff| diff > SAVEDLB + dist as usize)
+                })
+                .count()
+    })
 }
 
 fn main() {
+    let start = std::time::Instant::now();
     let mut map: [[Tile; EDGE]; EDGE] = [[Tile::new('\0', 0); EDGE]; EDGE];
 
     std::fs::read_to_string(INPUT)
@@ -161,12 +159,12 @@ fn main() {
                 (Point::new(x, y - 1), Point::new(x, y + 1)),
             ];
 
-            for opp in opposites {
-                if map[opp.0.x][opp.0.y].obj != '#'
-                    && map[opp.1.x][opp.1.y].obj != '#'
-                    && map[opp.0.x][opp.0.y]
+            for opps in opposites {
+                if map[opps.0.x][opps.0.y].obj != '#'
+                    && map[opps.1.x][opps.1.y].obj != '#'
+                    && map[opps.0.x][opps.0.y]
                         .time
-                        .abs_diff(map[opp.1.x][opp.1.y].time)
+                        .abs_diff(map[opps.1.x][opps.1.y].time)
                         > SAVEDLB + 2
                 {
                     part1 += 1;
@@ -175,12 +173,12 @@ fn main() {
         }
     }
 
-    println!("part1: {part1}");
 
     let part2 = path
         .iter()
         .take(path.len() - (SAVEDLB + 1) - 2)
-        .fold(0, |count, s| count + count_cheats(*s, &map));
+        .fold(0, |count, start| count + count_cheats(*start, &map));
 
-    println!("part2: {part2}");
+    println!("{}s", start.elapsed().as_secs_f64());
+    println!("part1: {part1}\npart2: {part2}");
 }

@@ -31,14 +31,13 @@ fn main() {
 
     let mut cache: HashMap<&str, usize> = HashMap::new();
 
-    let (part1, part2) = designs.lines().fold((0, 0), |(possible, total), design| {
+    let (part1, part2) = designs.lines().fold((0u16, 0), |(possible, total), design| {
         let ways = ways(design, &pats, &mut cache);
-        (possible + ways.clamp(0, 1), total + ways)
+        (possible + if ways == 0 { 0 } else { 1 }, total + ways)
     });
 
-    let end = start.elapsed().as_secs_f64();
+    println!("{}s", start.elapsed().as_secs_f64());
     println!("part1: {part1}\npart2: {part2}");
-    println!("{end}s")
 }
 
 // was used for Part 1
