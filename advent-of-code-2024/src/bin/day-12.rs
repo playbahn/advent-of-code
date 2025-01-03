@@ -131,7 +131,7 @@ fn main() {
     let start = std::time::Instant::now();
     let mut garden: [[char; UB]; UB] = [['\0'; UB]; UB];
     // to keep track of unvisited plots; `V` = `HashSet<_>` just for easy deletion.
-    let mut unvisited_plots: HashMap<char, HashSet<Point>> =
+    let mut unvisited: HashMap<char, HashSet<Point>> =
         HashMap::from_iter(('A'..'[').map(|ch| (ch, HashSet::new())));
 
     std::fs::read_to_string(INPUT)
@@ -141,10 +141,7 @@ fn main() {
         .for_each(|(y, isle)| {
             isle.char_indices().for_each(|(x, plant)| {
                 garden[x][y] = plant;
-                unvisited_plots
-                    .get_mut(&plant)
-                    .unwrap()
-                    .insert(Point::new(x, y));
+                unvisited.get_mut(&plant).unwrap().insert(Point::new(x, y));
             })
         });
 
@@ -164,11 +161,11 @@ fn main() {
             start_plot = Point::new(x, y);
             plant = garden[x][y];
 
-            if unvisited_plots[&plant].contains(&start_plot) {
+            if unvisited[&plant].contains(&start_plot) {
                 get_region(
                     start_plot,
                     &mut region,
-                    unvisited_plots.get_mut(&plant).unwrap(),
+                    unvisited.get_mut(&plant).unwrap(),
                     &garden,
                 );
 
