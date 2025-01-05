@@ -1,4 +1,4 @@
-fn main() {
+
     // (3010, 3019)
     let (mut row, mut col): (u16, u16) = (6, 6);
 

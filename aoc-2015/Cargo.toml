@@ -1,19 +1,9 @@
 [package]
-name = "advent-of-code-2024"
+name = "aoc-2015"
 version = "0.1.0"
 edition = "2021"
-# codegen-units = 1
-# lto = "fat"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[[bin]]
-name = "day1"
-path = "src/bin/day-01.rs"
-
-[[bin]]
-name = "day2"
-path = "src/bin/day-02.rs"
 
 [[bin]]
 name = "day3"
@@ -68,10 +58,6 @@ name = "day15"
 path = "src/bin/day-15.rs"
 
 [[bin]]
-name = "day15-visual"
-path = "src/bin/day-15-visual.rs"
-
-[[bin]]
 name = "day16"
 path = "src/bin/day-16.rs"
 
@@ -112,8 +98,8 @@ name = "day25"
 path = "src/bin/day-25.rs"
 
 [dependencies]
-bmp = "0.5.0"
-ctrlc = "3.4.5"
-memoize = "0.4.2"
-num-bigint = "0.4.6"
-screenshot-rs = "0.1.5"
+dinglebit_combinatorics = "1.1.0"
+md5 = "0.7.0"
+num-modular = { version = "0.6.1", features = ["std"] }
+
+regex = "1.10.3"
