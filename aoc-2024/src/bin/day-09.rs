@@ -2,6 +2,9 @@ use std::collections::VecDeque;
 
 const INPUT: &str = "input/day-09.txt";
 
+const P1: usize = 6_386_640_365_805;
+const P2: usize = 6_423_258_376_982;
+
 /// Lookup Table for constant time checksumming of each file.
 /// https://cprimozic.net/blog/optimizing-advent-of-code-2024/#constant-time-checksumming
 #[allow(clippy::identity_op)]
@@ -19,29 +22,27 @@ const LUT: [usize; 10] = [
 ];
 
 /// Any file.
-#[derive(Debug)]
 struct File {
-    /// file ID
+    /// File ID.
     id: usize,
-    /// Blocks left of this file ID that can be moved to the front
+    /// Blocks left of this file that can be moved to the front.
     blocks: usize,
-    /// Block offset on `Disk` (for Part 2)
-    offset: usize,
+    /// Block offset (for Part 2).
+    offset: u32,
 }
 
 impl File {
-    fn new(id: usize, blocks: usize, offset: usize) -> Self {
+    fn new(id: usize, blocks: usize, offset: u32) -> Self {
         Self { id, blocks, offset }
     }
 }
 
 /// Reader on actual disk map.
-#[derive(Debug)]
 struct Reader {
     /// The position of reader on the actual disk map.
     pos: usize,
     /// No. of blocks the file is consuming (if `pos` is even),
-    /// or the no. of empty blocks (if `pos` is odd).
+    /// or the no. of empty blocks to fill (if `pos` is odd).
     blocks: usize,
 }
 
@@ -69,8 +70,7 @@ fn main() {
 
     // Position of where the writer would be after any operation.
     let mut fragger: usize = 0;
-    // dummy vars
-    let mut file = File::new(usize::MAX, 0, usize::MAX);
+    let mut file = File::new(usize::MAX, 0, u32::MAX);
     let mut read = Reader::new(usize::MAX, 0);
     let mut p1: usize = 0;
 
@@ -96,10 +96,9 @@ fn main() {
         }
 
         if read.pos & 0b1 == 0 {
-            let read_blocks = if read.pos >> 1 == file.id {
-                file.blocks
-            } else {
-                read.blocks
+            let read_blocks = match read.pos >> 1 == file.id {
+                true => file.blocks,
+                false => read.blocks,
             };
 
             p1 += (read_blocks * fragger + LUT[read_blocks]) * (read.pos >> 1);
@@ -128,30 +127,43 @@ fn main() {
         }
     }
 
-    println!("p1: {p1} t1: {:?}", t1.elapsed());
+    let t1 = t1.elapsed();
+    println!("p1: {p1} t1: {t1:?}");
+    assert_eq!(p1, P1);
 
     let t2 = std::time::Instant::now();
 
-    // K = free spaces span; V = offsets of free spaces.
-    let mut free_spaces: [VecDeque<usize>; 10] = [const { VecDeque::new() }; 10];
-    let mut files: Vec<File> = Vec::with_capacity(10000);
-    let mut offset = 0usize;
+    // `free_spaces[n]` holds in creasing order, all the offsets of free spaces
+    // spanning `n` blocks.
+    let mut free_spaces: [VecDeque<u32>; 10] = [const { VecDeque::new() }; 10];
+    let mut file_offsets: [u32; 10_000] = [0; 10_000];
 
-    disk_map.char_indices().for_each(|(index, blocks)| {
-        let blocks = blocks.to_digit(10).unwrap() as usize;
+    disk_map.char_indices().fold(0, |offset, (index, blocks)| {
+        let blocks = blocks.to_digit(10).unwrap();
 
         if index & 0b1 == 0 {
-            files.push(File::new(index >> 1, blocks, offset));
-        } else if blocks > 0 {
-            free_spaces[blocks].push_back(offset);
+            file_offsets[index >> 1] = offset;
+        } else if blocks != 0 {
+            free_spaces[blocks as usize].push_back(offset);
         }
 
-        offset += blocks;
+        offset + blocks
     });
 
-    let mut p2: usize = 0;
+    let files = disk_map
+        .char_indices()
+        // We calculate checksum from the end.
+        .rev()
+        .step_by(2)
+        .map(|(id, blocks)| {
+            File::new(
+                id >> 1,
+                blocks.to_digit(10).unwrap() as usize,
+                file_offsets[id >> 1],
+            )
+        });
 
-    while let Some(file) = files.pop() {
+    let p2 = files.fold(0, |checksum, file| {
         let mut new_offset = file.offset;
         let mut index = file.blocks;
 
@@ -164,14 +176,19 @@ fn main() {
             }
         });
 
-        p2 += (file.blocks * new_offset + LUT[file.blocks]) * file.id;
-
-        let old_offset = free_spaces[index].pop_front();
-        if index > file.blocks {
-            free_spaces[index - file.blocks].push_front(old_offset.unwrap() + file.blocks);
-            free_spaces[index - file.blocks].make_contiguous().sort();
+        if new_offset != file.offset {
+            let old_offset = free_spaces[index].pop_front().unwrap();
+            if index != file.blocks {
+                free_spaces[index - file.blocks].push_front(old_offset + file.blocks as u32);
+                free_spaces[index - file.blocks].make_contiguous().sort();
+            }
         }
-    }
 
-    println!("p2: {p2} t2: {:?}", t2.elapsed());
+        checksum + (file.blocks * new_offset as usize + LUT[file.blocks]) * file.id
+    });
+
+    let t2 = t2.elapsed();
+    println!("p2: {p2} t2: {t2:?}");
+    println!("Total: {:?}", t1 + t2);
+    assert_eq!(p2, P2);
 }
